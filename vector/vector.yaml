@@ -1,0 +1,22 @@
+sources:
+  file_source:
+    type: file
+    include: ["/var/log/envoy_access.log"]
+    read_from: "beginning"
+
+transforms:
+  add_sensor_field:
+    type: remap
+    inputs: ["file_source"]
+    source: |
+      .host_name = "envoy"
+
+sinks:
+  redis_logs_sink:
+    type: redis
+    inputs: ["add_sensor_field"]
+    url: "redis://REDIS_HOST:6379"
+    key: "log_proxy"
+    data_type: "list"
+    encoding:
+      codec: "json"
